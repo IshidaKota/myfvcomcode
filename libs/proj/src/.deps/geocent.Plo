@@ -1,0 +1,49 @@
+geocent.lo: geocent.c /usr/include/stdc-predef.h \
+ /home/opt/local/cores/intel/compilers_and_libraries_2020.4.304/linux/compiler/include/math.h \
+ /usr/include/math.h /usr/include/features.h /usr/include/sys/cdefs.h \
+ /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h \
+ /usr/include/gnu/stubs-64.h /usr/include/bits/huge_val.h \
+ /usr/include/bits/huge_valf.h /usr/include/bits/huge_vall.h \
+ /usr/include/bits/inf.h /usr/include/bits/nan.h /usr/include/bits/mathdef.h \
+ /usr/include/bits/mathcalls.h /usr/include/bits/mathinline.h \
+ /home/opt/local/cores/intel/compilers_and_libraries_2020.4.304/linux/compiler/include/math_common_define.h \
+ /home/opt/local/cores/intel/compilers_and_libraries_2020.4.304/linux/compiler/include/math_common_undefine.h \
+ geocent.h
+
+/usr/include/stdc-predef.h:
+
+/home/opt/local/cores/intel/compilers_and_libraries_2020.4.304/linux/compiler/include/math.h:
+
+/usr/include/math.h:
+
+/usr/include/features.h:
+
+/usr/include/sys/cdefs.h:
+
+/usr/include/bits/wordsize.h:
+
+/usr/include/gnu/stubs.h:
+
+/usr/include/gnu/stubs-64.h:
+
+/usr/include/bits/huge_val.h:
+
+/usr/include/bits/huge_valf.h:
+
+/usr/include/bits/huge_vall.h:
+
+/usr/include/bits/inf.h:
+
+/usr/include/bits/nan.h:
+
+/usr/include/bits/mathdef.h:
+
+/usr/include/bits/mathcalls.h:
+
+/usr/include/bits/mathinline.h:
+
+/home/opt/local/cores/intel/compilers_and_libraries_2020.4.304/linux/compiler/include/math_common_define.h:
+
+/home/opt/local/cores/intel/compilers_and_libraries_2020.4.304/linux/compiler/include/math_common_undefine.h:
+
+geocent.h:
