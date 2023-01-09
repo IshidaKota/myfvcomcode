@@ -48,8 +48,9 @@ SUBROUTINE BCOND_TS(NCON2)
   INTEGER  :: I,J,K,J1,J11,J22,NCON2
   REAL(SP), ALLOCATABLE :: TTMP(:,:),STMP(:,:)
   !<----------ishid debug
-   REAL(SP) :: dx,dy,res
-   INTEGER :: EJ,EJ1,J_NEXT
+   REAL(SP) :: dx,dy,dj1x,dj1y,dp1,dp2,dp12,flag_i,flag_o,INTMP,OUTTMP
+
+   INTEGER :: EJ,J_NEXT
   !>----------ishid debug
   REAL(SP) ::TMAX,TMIN,SMAX,SMIN
 
@@ -121,39 +122,35 @@ SUBROUTINE BCOND_TS(NCON2)
         CALL BCOND_T_PERTURBATION(T2D_NEXT,T2D,TTMP,I,J,J1)
         IF (I .le. IOBCN-1) THEN
             J_NEXT = I_OBC_N(I+1) !J_NEXT:一つ先の開境界のノード番号
-        ELSE !一番右端は一つ前のノード番号で補間する
+            EJ = LISBCE_2(I) !エレメントのindex
+        ELSE !一番右端は一つ前のノード番号で補間する　!このelseはなくても成立する(初期化されないはずなので前の値が残るから)
             J      = I_OBC_N(I-1)
             J_NEXT = I_OBC_N(I)
+            EJ = LISBCE_2(I-1)
         ENDIF
-        dx = vx(J_NEXT) - vx(J) !delta x in meters
-        dy = vy(J_NEXT) - vy(J) !delta y in meters
-        !ノードの両隣のelementの値を平均してノードの流速とする
-        IF (I == 1) THEN
-         EJ = LISBCE_2(I) ! EJ = index of element at open boundary ISBCE=2:openboundary!確認済み
-        ELSEIF (I == IOBCN) THEN
-         EJ = LISBCE_2(I-1)
-        ELSE
-         EJ = LISBCE_2(I)
-         EJ1 = LISBCE_2(I-1)
-        ENDIF
+        dx = vx(J_NEXT) - vx(J) !delta x in meters for obc edge
+        dy = vy(J_NEXT) - vy(J) !delta y in meters for obc edge
+        dj1x = vx(J1) -vx(J)
+        dj1y = vy(J1) -vy(J)
         DO K = 1,KBM1
-         IF (I == 1 .or. I == IOBCN) THEN
-            res = V(EJ,K) * dx - U(EJ,K) *  dy   !正領域か負領域の判定
-         ELSE
-            res = 0.5_SP*(V(EJ,K) + V(EJ1,K)) * dx - 0.5_SP*(U(EJ,K) + U(EJ1,K)) *  dy
-         ENDIF
+         dp1 = - dy * U(J,K)   +   dx * V(J,K) !エッジに沿った方向ベクトル（ノード番号が増加する方向を正とし，番号の小さい方を基点ノード）を左に90度回転させた法線ベクトルと対応するcellの中心における流速ベクトルの内積
+         dp2 = - dy * dj1x     +   dx * dj1y !この法線ベクトルと基点ノードから NEXT_OBC() のノードに向かうベクトルとの内積
 
-         IF (res .gt. 0.0_SP) THEN
+         dp12 = dp1 * dp2
+         flag_i = MAX(SIGN(1.0_SP,  dp12), 0.0_SP) ! flag_i = 1（流入時），=0（流出時）
+         flag_o = MAX(SIGN(1.0_SP, -dp12), 0.0_SP) ! flag_o = 1（流出時），=0（流入時）
+
+         !INTMP !流入の場合の値    !OUTTMP !流出の場合の値
            ! 流入
            IF(OBC_TEMP_NUDGING) THEN
-              TF1(J,K) = T1(J,K) - OBC_TEMP_NUDGING_TIMESCALE*RAMP*(T1(J,K)&
+              INTMP = T1(J,K) - OBC_TEMP_NUDGING_TIMESCALE*RAMP*(T1(J,K)&
               &-TEMP_OBC(I,K))
            ELSE
-              TF1(J,K) = T1(J,K)
+              INTMP = T1(J,K)
            ENDIF
-         ELSE
+
             !流出
-           TF1(J,K)=T2D_OBC+TTMP(I,K)
+           OUTTMP=T2D_OBC+TTMP(I,K)
 
            TMAX = MAXVAL(T1(NBSN(J,1:NTSN(J)),K))
            TMIN = MINVAL(T1(NBSN(J,1:NTSN(J)),K))
@@ -179,9 +176,10 @@ SUBROUTINE BCOND_TS(NCON2)
                   (DZ(J,K)+DZ(J,K+1)))
             END IF
 
-            IF(TMIN-TF1(J,K) > 0.0_SP)TF1(J,K) = TMIN
-            IF(TF1(J,K)-TMAX > 0.0_SP)TF1(J,K) = TMAX
-         ENDIF
+            IF(TMIN-OUTTMP > 0.0_SP)OUTTMP = TMIN
+            IF(OUTTMP-TMAX > 0.0_SP)OUTTMP = TMAX
+
+            TF1(J,K) = flag_i * INTMP + flag_o * MAX(0.0_SP, -flag_i * flag_o) * OUTTMP
          ENDDO
          
         !...
@@ -243,10 +241,11 @@ SUBROUTINE BCOND_TS(NCON2)
 !         END IF
 
 !       END IF
-!>----------------ishid debug 20230107
+
      END DO
      DEALLOCATE(TTMP)
 
+!>----------------ishid debug 20230107
 
      !
      !  SET SALINITY CONDITIONS ON OUTER BOUNDARY
@@ -256,6 +255,7 @@ SUBROUTINE BCOND_TS(NCON2)
      IF (OBC_SALT_NUDGING) CALL UPDATE_OBC_SALT(IntTime,SALT_OBC)
 
      ALLOCATE(STMP(IOBCN,KBM1));  STMP = 0.0_SP
+
      DO I=1,IOBCN
         J=I_OBC_N(I)
         J1=NEXT_OBC(I)
@@ -273,39 +273,36 @@ SUBROUTINE BCOND_TS(NCON2)
 
         CALL BCOND_S_PERTURBATION(S2D_NEXT,S2D,STMP,I,J,J1)
         IF (I .le. IOBCN-1) THEN
-         J_NEXT = I_OBC_N(I+1)
-        ELSE
+         J_NEXT = I_OBC_N(I+1) !J_NEXT:一つ先の開境界のノード番号
+         EJ = LISBCE_2(I)
+        ELSE !一番右端は一つ前のノード番号で補間する !このelseはなくても成立する(初期化されないはずなので前の値が残るから)
          J      = I_OBC_N(I-1)
          J_NEXT = I_OBC_N(I)
-        ENDIF
-        dx = vx(J1) - vx(J) !delta x in meters
-        dy = vy(J1) - vy(J) !delta y in meters
-                !ノードの両隣のelementの値を平均してノードの流速とする
-        IF (I == 1) THEN
-         EJ = LISBCE_2(I) ! EJ = index of element at open boundary ISBCE=2:openboundary!確認済み
-        ELSEIF (I == IOBCN) THEN
-         EJ = LISBCE_2(I-1)
-        ELSE
          EJ = LISBCE_2(I)
-         EJ1 = LISBCE_2(I-1)
         ENDIF
-        DO K = 1,KBM1
-         IF (I == 1 .or. I == IOBCN) THEN
-            res = V(EJ,K) * dx - U(EJ,K) *  dy   !正領域か負領域の判定
-         ELSE
-            res = 0.5_SP*(V(EJ,K) + V(EJ1,K)) * dx - 0.5_SP*(U(EJ,K) + U(EJ1,K)) *  dy
-         ENDIF
-         IF (res > 0.0_SP) THEN
+         dx = vx(J_NEXT) - vx(J) !delta x in meters for obc edge
+         dy = vy(J_NEXT) - vy(J) !delta y in meters for obc edge
+         dj1x = vx(J1) -vx(J)
+         dj1y = vy(J1) -vy(J)
+
+      DO K = 1,KBM1
+         dp1 = - dy * U(EJ,K)   +   dx * V(EJ,K) !エッジに沿った方向ベクトル（ノード番号が増加する方向を正とし，番号の小さい方を基点ノード）を左に90度回転させた法線ベクトルと対応するcellの中心における流速ベクトルの内積
+         dp2 = - dy * dj1x     +   dx * dj1y !この法線ベクトルと基点ノードから NEXT_OBC() のノードに向かうベクトルとの内積
+
+         dp12 = dp1 * dp2
+         flag_i = MAX(SIGN(1.0_SP,  dp12), 0.0_SP) ! flag_i = 1（流入時），=0（流出時）
+         flag_o = MAX(SIGN(1.0_SP, -dp12), 0.0_SP) ! flag_o = 1（流出時），=0（流入時）
+
            ! 流入
            IF(OBC_SALT_NUDGING) THEN
-              SF1(J,K) = S1(J,K) - OBC_SALT_NUDGING_TIMESCALE*RAMP*(S1(J,K)&
+              INTMP = S1(J,K) - OBC_SALT_NUDGING_TIMESCALE*RAMP*(S1(J,K)&
               &-SALT_OBC(I,K))
            ELSE
-              SF1(J,K) = S1(J,K)
+              INTMP = S1(J,K)
            ENDIF
-         ELSE
+   
             !流出
-           SF1(J,K)=S2D_OBC+STMP(I,K)
+           OUTTMP=S2D_OBC+STMP(I,K)
 
            SMAX = MAXVAL(S1(NBSN(J,1:NTSN(J)),K))
            SMIN = MINVAL(S1(NBSN(J,1:NTSN(J)),K))
@@ -331,9 +328,9 @@ SUBROUTINE BCOND_TS(NCON2)
                   (DZ(J,K)+DZ(J,K+1)))
             END IF
 
-            IF(SMIN-SF1(J,K) > 0.0_SP)SF1(J,K) = SMIN
-            IF(SF1(J,K)-SMAX > 0.0_SP)SF1(J,K) = SMAX
-         ENDIF
+            IF(SMIN-OUTTMP > 0.0_SP)OUTTMP = SMIN
+            IF(OUTTMP-SMAX > 0.0_SP)OUTTMP = SMAX
+         TF1(J,K) = flag_i * INTMP + flag_o * MAX(0.0_SP, -flag_i * flag_o) * OUTTMP
       ENDDO
 !        ! IF THE FLOW IS OUT OF THE DOMAIN
 !        IF(UARD_OBCN(I) > 0.0_SP) THEN
@@ -393,6 +390,7 @@ SUBROUTINE BCOND_TS(NCON2)
 !>--------------ishid debug 20230107
      END DO
      DEALLOCATE(STMP)
+!>----------------ishid debug 20230107
   ELSE
      PRINT*, 'NCON2 NOT IN THE LIST'
      PRINT*, 'MUST BE 1 OR 2'
