@@ -60,7 +60,7 @@ SUBROUTINE BCOND_TS(NCON2)
   REAL(SP), ALLOCATABLE :: TTMP(:,:),STMP(:,:)
   !<----------ishid debug
    REAL(SP) :: dx,dy,res
-   INTEGER :: EJ,EJ1
+   INTEGER :: EJ,EJ1,J_NEXT
   !>----------ishid debug
   REAL(SP) ::TMAX,TMIN,SMAX,SMIN
 
@@ -130,9 +130,14 @@ SUBROUTINE BCOND_TS(NCON2)
         T2D_OBC=(T2D*DT(J)-TMP*DTI/ART1(J))/D(J)
 
         CALL BCOND_T_PERTURBATION(T2D_NEXT,T2D,TTMP,I,J,J1)
-
-        dx = vx(J1) - vy(J) !delta x in meters
-        dy = vy(J1) - vy(J) !delta y in meters
+        IF (I .le. IOBCN-1) THEN
+            J_NEXT = I_OBC_N(I+1) !J_NEXT:一つ先の開境界のノード番号
+        ELSE !一番右端は一つ前のノード番号で補間する
+            J      = I_OBC_N(I-1)
+            J_NEXT = I_OBC_N(I)
+        ENDIF
+        dx = vx(J_NEXT) - vx(J) !delta x in meters
+        dy = vy(J_NEXT) - vy(J) !delta y in meters
         !ノードの両隣のelementの値を平均してノードの流速とする
         IF (I == 1) THEN
          EJ = LISBCE_2(I) ! EJ = index of element at open boundary ISBCE=2:openboundary!確認済み
@@ -278,8 +283,13 @@ SUBROUTINE BCOND_TS(NCON2)
         S2D_OBC=(S2D*DT(J)-TMP*DTI/ART1(J))/D(J)
 
         CALL BCOND_S_PERTURBATION(S2D_NEXT,S2D,STMP,I,J,J1)
-
-        dx = vx(J1) - vy(J) !delta x in meters
+        IF (I .le. IOBCN-1) THEN
+         J_NEXT = I_OBC_N(I+1)
+        ELSE
+         J      = I_OBC_N(I-1)
+         J_NEXT = I_OBC_N(I)
+        ENDIF
+        dx = vx(J1) - vx(J) !delta x in meters
         dy = vy(J1) - vy(J) !delta y in meters
                 !ノードの両隣のelementの値を平均してノードの流速とする
         IF (I == 1) THEN
