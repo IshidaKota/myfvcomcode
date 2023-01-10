@@ -123,7 +123,7 @@ SUBROUTINE BCOND_TS(NCON2)
         IF (I .le. IOBCN-1) THEN
             J_NEXT = I_OBC_N(I+1) !J_NEXT:一つ先の開境界のノード番号
             EJ = LISBCE_2(I) !エレメントのindex
-        ELSE !一番右端は一つ前のノード番号で補間する　!このelseはなくても成立する(初期化されないはずなので前の値が残るから)
+        ELSE !一番右端は一つ前のノード番号で補間する　
             J      = I_OBC_N(I-1)
             J_NEXT = I_OBC_N(I)
             EJ = LISBCE_2(I-1)
@@ -133,13 +133,12 @@ SUBROUTINE BCOND_TS(NCON2)
         dj1x = vx(J1) -vx(J)
         dj1y = vy(J1) -vy(J)
         DO K = 1,KBM1
-         dp1 = - dy * U(J,K)   +   dx * V(J,K) !エッジに沿った方向ベクトル（ノード番号が増加する方向を正とし，番号の小さい方を基点ノード）を左に90度回転させた法線ベクトルと対応するcellの中心における流速ベクトルの内積
+         dp1 = - dy * U(EJ,K)   +   dx * V(EJ,K) !エッジに沿った方向ベクトル（ノード番号が増加する方向を正とし，番号の小さい方を基点ノード）を左に90度回転させた法線ベクトルと対応するcellの中心における流速ベクトルの内積
          dp2 = - dy * dj1x     +   dx * dj1y !この法線ベクトルと基点ノードから NEXT_OBC() のノードに向かうベクトルとの内積
 
          dp12 = dp1 * dp2
          flag_i = MAX(SIGN(1.0_SP,  dp12), 0.0_SP) ! flag_i = 1（流入時），=0（流出時）
          flag_o = MAX(SIGN(1.0_SP, -dp12), 0.0_SP) ! flag_o = 1（流出時），=0（流入時）
-
          !INTMP !流入の場合の値    !OUTTMP !流出の場合の値
            ! 流入
            IF(OBC_TEMP_NUDGING) THEN
@@ -179,7 +178,8 @@ SUBROUTINE BCOND_TS(NCON2)
             IF(TMIN-OUTTMP > 0.0_SP)OUTTMP = TMIN
             IF(OUTTMP-TMAX > 0.0_SP)OUTTMP = TMAX
 
-            TF1(J,K) = flag_i * INTMP + flag_o * MAX(0.0_SP, -flag_i * flag_o) * OUTTMP
+            TF1(J,K) = flag_i * INTMP + flag_o * (1.0_SP-flag_i) * OUTTMP
+            IF (K==4 .and. I==7) write(IPT,*) "TEMP:INTMP=",INTMP," OUTTMP=, " ,OUTTMP ,"flag_i=",flag_i,"flag_o=",flag_o ,"TF1=",TF1(J,K)
          ENDDO
          
         !...
@@ -275,7 +275,7 @@ SUBROUTINE BCOND_TS(NCON2)
         IF (I .le. IOBCN-1) THEN
          J_NEXT = I_OBC_N(I+1) !J_NEXT:一つ先の開境界のノード番号
          EJ = LISBCE_2(I)
-        ELSE !一番右端は一つ前のノード番号で補間する !このelseはなくても成立する(初期化されないはずなので前の値が残るから)
+        ELSE !一番右端は一つ前のノード番号で補間する
          J      = I_OBC_N(I-1)
          J_NEXT = I_OBC_N(I)
          EJ = LISBCE_2(I-1)
@@ -330,7 +330,8 @@ SUBROUTINE BCOND_TS(NCON2)
 
             IF(SMIN-OUTTMP > 0.0_SP)OUTTMP = SMIN
             IF(OUTTMP-SMAX > 0.0_SP)OUTTMP = SMAX
-         TF1(J,K) = flag_i * INTMP + flag_o * MAX(0.0_SP, -flag_i * flag_o) * OUTTMP
+         SF1(J,K) = flag_i * INTMP + flag_o * (1.0_SP-flag_i) * OUTTMP
+         IF (K==4 .and. I==7) write(IPT,*) "sal INTMP=",INTMP," OUTTMP=, " ,OUTTMP ,"flag_i=",flag_i,"flag_o=",flag_o,"SF1=",SF1(J,K)
       ENDDO
 !        ! IF THE FLOW IS OUT OF THE DOMAIN
 !        IF(UARD_OBCN(I) > 0.0_SP) THEN
