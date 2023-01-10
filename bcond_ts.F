@@ -278,7 +278,7 @@ SUBROUTINE BCOND_TS(NCON2)
         ELSE !一番右端は一つ前のノード番号で補間する !このelseはなくても成立する(初期化されないはずなので前の値が残るから)
          J      = I_OBC_N(I-1)
          J_NEXT = I_OBC_N(I)
-         EJ = LISBCE_2(I)
+         EJ = LISBCE_2(I-1)
         ENDIF
          dx = vx(J_NEXT) - vx(J) !delta x in meters for obc edge
          dy = vy(J_NEXT) - vy(J) !delta y in meters for obc edge
