@@ -179,7 +179,7 @@ SUBROUTINE BCOND_TS(NCON2)
             IF(OUTTMP-TMAX > 0.0_SP)OUTTMP = TMAX
 
             TF1(J,K) = flag_i * INTMP + flag_o * (1.0_SP-flag_i) * OUTTMP
-            IF (K==4 .and. I==7) write(IPT,*) "TEMP:INTMP=",INTMP," OUTTMP=, " ,OUTTMP ,"flag_i=",flag_i,"flag_o=",flag_o ,"TF1=",TF1(J,K)
+            !IF (K==4 .and. I==7) write(IPT,*) "TEMP:INTMP=",INTMP," OUTTMP=, " ,OUTTMP ,"flag_i=",flag_i,"flag_o=",flag_o ,"TF1=",TF1(J,K)
          ENDDO
          
         !...
@@ -331,7 +331,7 @@ SUBROUTINE BCOND_TS(NCON2)
             IF(SMIN-OUTTMP > 0.0_SP)OUTTMP = SMIN
             IF(OUTTMP-SMAX > 0.0_SP)OUTTMP = SMAX
          SF1(J,K) = flag_i * INTMP + flag_o * (1.0_SP-flag_i) * OUTTMP
-         IF (K==4 .and. I==7) write(IPT,*) "sal INTMP=",INTMP," OUTTMP=, " ,OUTTMP ,"flag_i=",flag_i,"flag_o=",flag_o,"SF1=",SF1(J,K)
+         !IF (K==4 .and. I==7) write(IPT,*) "sal INTMP=",INTMP," OUTTMP=, " ,OUTTMP ,"flag_i=",flag_i,"flag_o=",flag_o,"SF1=",SF1(J,K)
       ENDDO
 !        ! IF THE FLOW IS OUT OF THE DOMAIN
 !        IF(UARD_OBCN(I) > 0.0_SP) THEN
