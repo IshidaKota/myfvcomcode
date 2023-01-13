@@ -11409,46 +11409,46 @@ CONTAINS
          ! NULLIFY(STORAGE_VEC)
 
           !air pressure
-          VAR => FIND_VAR(PRECIP_FILE,"air_pressure",FOUND)
-          IF(.not. FOUND) CALL FATAL_ERROR &
-               & ("IN PRECIPITATION BOUNDARY CONDITION FILE OBJECT",&
-               & "FILE NAME: "//TRIM(PRECIPITATION_FILE),&
-               & "COULD NOT FIND VARIABLE 'air_pressure'")
+         ! VAR => FIND_VAR(PRECIP_FILE,"air_pressure",FOUND)
+         ! IF(.not. FOUND) CALL FATAL_ERROR &
+         !      & ("IN PRECIPITATION BOUNDARY CONDITION FILE OBJECT",&
+         !      & "FILE NAME: "//TRIM(PRECIPITATION_FILE),&
+         !      & "COULD NOT FIND VARIABLE 'air_pressure'")
 
           ! MAKE SPACE FOR THE DATA FROM THE FILE
-          PRECIP_PAIR_N => reference_var(var)
-          ALLOCATE(STORAGE_VEC(0:MT), stat = status)
-          IF(STATUS /= 0) CALL FATAL_ERROR("ALLOCATION ERROR IN SURFACE PRECIPITATION")
-          CALL NC_CONNECT_PVAR(PRECIP_PRE_N,STORAGE_VEC)
-          NULLIFY(STORAGE_VEC)
+          !PRECIP_PAIR_N => reference_var(var)
+          !ALLOCATE(STORAGE_VEC(0:MT), stat = status)
+          !IF(STATUS /= 0) CALL FATAL_ERROR("ALLOCATION ERROR IN SURFACE PRECIPITATION")
+          !CALL NC_CONNECT_PVAR(PRECIP_PRE_N,STORAGE_VEC)
+          !NULLIFY(STORAGE_VEC)
 
-                 ! MAKE SPACE FOR THE DATA FROM THE FILE
-          PRECIP_PAIR_P => reference_var(var)
-          ALLOCATE(STORAGE_VEC(0:MT), stat = status)
-          IF(STATUS /= 0) CALL FATAL_ERROR("ALLOCATION ERROR IN SURFACE PRECIPITATION")
-          CALL NC_CONNECT_PVAR(PRECIP_PRE_P,STORAGE_VEC)
-          NULLIFY(STORAGE_VEC)
+          !       ! MAKE SPACE FOR THE DATA FROM THE FILE
+          !PRECIP_PAIR_P => reference_var(var)
+          !ALLOCATE(STORAGE_VEC(0:MT), stat = status)
+          !IF(STATUS /= 0) CALL FATAL_ERROR("ALLOCATION ERROR IN SURFACE PRECIPITATION")
+          !CALL NC_CONNECT_PVAR(PRECIP_PRE_P,STORAGE_VEC)
+          !NULLIFY(STORAGE_VEC)
 
-          !relative humidity
-          VAR => FIND_VAR(PRECIP_FILE,"relative_humidity",FOUND)
-          IF(.not. FOUND) CALL FATAL_ERROR &
-               & ("IN PRECIPITATION BOUNDARY CONDITION FILE OBJECT",&
-               & "FILE NAME: "//TRIM(PRECIPITATION_FILE),&
-               & "COULD NOT FIND VARIABLE 'relative_humidity'")
+          !!relative humidity
+          !VAR => FIND_VAR(PRECIP_FILE,"relative_humidity",FOUND)
+          !IF(.not. FOUND) CALL FATAL_ERROR &
+          !     & ("IN PRECIPITATION BOUNDARY CONDITION FILE OBJECT",&
+          !     & "FILE NAME: "//TRIM(PRECIPITATION_FILE),&
+          !     & "COULD NOT FIND VARIABLE 'relative_humidity'")
 
-          ! MAKE SPACE FOR THE DATA FROM THE FILE
-          PRECIP_RH_N => reference_var(var)
-          ALLOCATE(STORAGE_VEC(0:MT), stat = status)
-          IF(STATUS /= 0) CALL FATAL_ERROR("ALLOCATION ERROR IN SURFACE PRECIPITATION")
-          CALL NC_CONNECT_PVAR(PRECIP_PRE_N,STORAGE_VEC)
-          NULLIFY(STORAGE_VEC)
+          !! MAKE SPACE FOR THE DATA FROM THE FILE
+          !PRECIP_RH_N => reference_var(var)
+          !ALLOCATE(STORAGE_VEC(0:MT), stat = status)
+          !IF(STATUS /= 0) CALL FATAL_ERROR("ALLOCATION ERROR IN SURFACE PRECIPITATION")
+          !CALL NC_CONNECT_PVAR(PRECIP_PRE_N,STORAGE_VEC)
+          !NULLIFY(STORAGE_VEC)
 
-                 ! MAKE SPACE FOR THE DATA FROM THE FILE
-          PRECIP_RH_P => reference_var(var)
-          ALLOCATE(STORAGE_VEC(0:MT), stat = status)
-          IF(STATUS /= 0) CALL FATAL_ERROR("ALLOCATION ERROR IN SURFACE PRECIPITATION")
-          CALL NC_CONNECT_PVAR(PRECIP_PRE_P,STORAGE_VEC)
-          NULLIFY(STORAGE_VEC)
+           !      ! MAKE SPACE FOR THE DATA FROM THE FILE
+          !PRECIP_RH_P => reference_var(var)
+          !ALLOCATE(STORAGE_VEC(0:MT), stat = status)
+          !IF(STATUS /= 0) CALL FATAL_ERROR("ALLOCATION ERROR IN SURFACE PRECIPITATION")
+          !CALL NC_CONNECT_PVAR(PRECIP_PRE_P,STORAGE_VEC)
+          !NULLIFY(STORAGE_VEC)
 
    
      ELSE
@@ -11521,6 +11521,8 @@ CONTAINS
     ! PRECIPITATION
     PRECIP_PRE_P%curr_stkcnt = 0
     PRECIP_PRE_N%curr_stkcnt = 0
+    write(IPT,*) "now we here"
+    
     !<-------ishid debug
     IF (PRECIPITATION_BULK_ON) THEN
         ! UWIND
@@ -11530,11 +11532,11 @@ CONTAINS
     !PRECIP_VWND_P%curr_stkcnt = 0
     !PRECIP_VWND_N%curr_stkcnt = 0
        ! AIR PRESSEURE
-    PRECIP_PAIR_P%curr_stkcnt = 0
-    PRECIP_PAIR_N%curr_stkcnt = 0
+    !PRECIP_PAIR_P%curr_stkcnt = 0
+    !PRECIP_PAIR_N%curr_stkcnt = 0
        ! RELATIVE HUMIDITY
-    PRECIP_RH_P%curr_stkcnt = 0
-    PRECIP_RH_N%curr_stkcnt = 0
+    !PRECIP_RH_P%curr_stkcnt = 0
+    !PRECIP_RH_N%curr_stkcnt = 0
     !ELSE
     ! EVAPORATION
     ELSE
