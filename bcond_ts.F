@@ -120,18 +120,29 @@ SUBROUTINE BCOND_TS(NCON2)
         T2D_OBC=(T2D*DT(J)-TMP*DTI/ART1(J))/D(J)
 
         CALL BCOND_T_PERTURBATION(T2D_NEXT,T2D,TTMP,I,J,J1)
-        IF (I .le. IOBCN-1) THEN
-            J_NEXT = I_OBC_N(I+1) !J_NEXT:一つ先の開境界のノード番号
-            EJ = LISBCE_2(I) !エレメントのindex
-        ELSE !一番右端は一つ前のノード番号で補間する　
-            J      = I_OBC_N(I-1)
-            J_NEXT = I_OBC_N(I)
-            EJ = LISBCE_2(I-1)
+
+
+        IF (I .le. IOBCN-1)  THEN
+         J_NEXT = I_OBC_N(I+1)
+         dx = vx(J_NEXT) - vx(J) !delta x in meters for obc edge
+         dy = vy(J_NEXT) - vy(J) !delta y in meters for obc edge  
+         dj1x = vx(J1) -vx(J)
+         dj1y = vy(J1) -vy(J)
+         IF (dx >0) THEN
+            EJ = LISBCE_2(I)
+         ELSE
+            EJ = LISBCE_2(IOBCN-I)
+         ENDIF
+        !ESLE IF (I == IOBCN) THEN
+         !一つ前の値を使いたいので定義しない
         ENDIF
-        dx = vx(J_NEXT) - vx(J) !delta x in meters for obc edge
-        dy = vy(J_NEXT) - vy(J) !delta y in meters for obc edge
-        dj1x = vx(J1) -vx(J)
-        dj1y = vy(J1) -vy(J)
+        !write(IPT,*) "I=", I ,"J=",J,"EJ=",EJ
+
+
+
+        
+
+
         DO K = 1,KBM1
          dp1 = - dy * U(EJ,K)   +   dx * V(EJ,K) !エッジに沿った方向ベクトル（ノード番号が増加する方向を正とし，番号の小さい方を基点ノード）を左に90度回転させた法線ベクトルと対応するcellの中心における流速ベクトルの内積
          dp2 = - dy * dj1x     +   dx * dj1y !この法線ベクトルと基点ノードから NEXT_OBC() のノードに向かうベクトルとの内積
@@ -272,18 +283,21 @@ SUBROUTINE BCOND_TS(NCON2)
         S2D_OBC=(S2D*DT(J)-TMP*DTI/ART1(J))/D(J)
 
         CALL BCOND_S_PERTURBATION(S2D_NEXT,S2D,STMP,I,J,J1)
-        IF (I .le. IOBCN-1) THEN
-         J_NEXT = I_OBC_N(I+1) !J_NEXT:一つ先の開境界のノード番号
-         EJ = LISBCE_2(I)
-        ELSE !一番右端は一つ前のノード番号で補間する
-         J      = I_OBC_N(I-1)
-         J_NEXT = I_OBC_N(I)
-         EJ = LISBCE_2(I-1)
-        ENDIF
+        IF (I .le. IOBCN-1)  THEN
+         J_NEXT = I_OBC_N(I+1)
          dx = vx(J_NEXT) - vx(J) !delta x in meters for obc edge
-         dy = vy(J_NEXT) - vy(J) !delta y in meters for obc edge
+         dy = vy(J_NEXT) - vy(J) !delta y in meters for obc edge  
          dj1x = vx(J1) -vx(J)
          dj1y = vy(J1) -vy(J)
+         IF (dx >0) THEN
+            EJ = LISBCE_2(I)
+         ELSE
+            EJ = LISBCE_2(IOBCN-I)
+         ENDIF
+        !ESLE IF (I == IOBCN) THEN
+         !一つ前の値を使いたいので定義しない
+        ENDIF
+        !write(IPT,*) "I=", I ,"J=",J,"EJ=",EJ
 
       DO K = 1,KBM1
          dp1 = - dy * U(EJ,K)   +   dx * V(EJ,K) !エッジに沿った方向ベクトル（ノード番号が増加する方向を正とし，番号の小さい方を基点ノード）を左に90度回転させた法線ベクトルと対応するcellの中心における流速ベクトルの内積
